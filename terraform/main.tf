@@ -16,14 +16,7 @@ provider "aws" {
   }
 }
 
-resource "aws_s3_bucket" "test-bucket" {
-  bucket = "my-bucket"
-}
-
-resource "aws_s3_bucket" "test-bucket123" {
-  bucket = "my-bucket123"
-}
-
+# add policy
 data "aws_iam_policy_document" "assume_role" {
   statement {
     effect = "Allow"
@@ -37,11 +30,13 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
+# create iam role
 resource "aws_iam_role" "iam_for_lambda" {
   name               = "iam_for_lambda"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
+# create lambda function
 resource "aws_lambda_function" "test_lambda" {
   filename         = "lambda_function.zip"
   function_name    = "lambda_function_name"
@@ -51,6 +46,7 @@ resource "aws_lambda_function" "test_lambda" {
   runtime          = "python3.9"
 }
 
+# create lambda function url
 resource "aws_lambda_function_url" "test_latest" {
   function_name      = aws_lambda_function.test_lambda.function_name
   authorization_type = "NONE"
@@ -65,17 +61,20 @@ resource "aws_lambda_function_url" "test_latest" {
   }
 }
 
+# create api gateway
 resource "aws_api_gateway_rest_api" "my_api" {
   name        = "my-api"
   description = "My API Gateway"
 }
 
+# create api gateway resource
 resource "aws_api_gateway_resource" "root" {
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   parent_id   = aws_api_gateway_rest_api.my_api.root_resource_id
   path_part   = "uppercase"
 }
 
+# create api gateway method
 resource "aws_api_gateway_method" "post" {
   rest_api_id   = aws_api_gateway_rest_api.my_api.id
   resource_id   = aws_api_gateway_resource.root.id
@@ -83,6 +82,7 @@ resource "aws_api_gateway_method" "post" {
   authorization = "NONE"
 }
 
+# create api gateway integration
 resource "aws_api_gateway_integration" "lambda_integration" {
   rest_api_id             = aws_api_gateway_rest_api.my_api.id
   resource_id             = aws_api_gateway_resource.root.id
@@ -92,6 +92,7 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   uri                     = aws_lambda_function.test_lambda.invoke_arn
 }
 
+# create api gateway method response
 resource "aws_api_gateway_method_response" "proxy" {
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   resource_id = aws_api_gateway_resource.root.id
@@ -99,6 +100,7 @@ resource "aws_api_gateway_method_response" "proxy" {
   status_code = "200"
 }
 
+# create api gateway integration response
 resource "aws_api_gateway_integration_response" "proxy" {
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   resource_id = aws_api_gateway_resource.root.id
@@ -111,6 +113,7 @@ resource "aws_api_gateway_integration_response" "proxy" {
   ]
 }
 
+# create api gateway deployment
 resource "aws_api_gateway_deployment" "deployment" {
   depends_on  = [aws_api_gateway_integration.lambda_integration]
   rest_api_id = aws_api_gateway_rest_api.my_api.id
@@ -118,12 +121,14 @@ resource "aws_api_gateway_deployment" "deployment" {
   description = "Deployed at ${timestamp()}"
 }
 
+# create api gateway stage
 resource "aws_api_gateway_stage" "test" {
   deployment_id = aws_api_gateway_deployment.deployment.id
   rest_api_id   = aws_api_gateway_rest_api.my_api.id
   stage_name    = "dev"
 }
 
+# create lambda permission
 resource "aws_lambda_permission" "apigw" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
