@@ -7,7 +7,7 @@ import sys
 
 def zip_files_in_directory(directory, output_zip):
     with zipfile.ZipFile(output_zip, 'w') as zipf:
-        for root, dirs, files in os.walk(directory):
+        for root, _, files in os.walk(directory):
             for file in files:
                 file_path = os.path.join(root, file)
                 arcname = os.path.relpath(file_path, directory)
@@ -18,8 +18,7 @@ def copy_directory(src, dst):
         shutil.rmtree(dst)
     shutil.copytree(src, dst)
 
-if __name__ == "__main__":
-    
+def deploy_lambda_function():
     # app location
     directory = "./app/"
     
@@ -35,3 +34,9 @@ if __name__ == "__main__":
     
     # spin up docker-compose with localstack and deploy lambda function
     subprocess.check_call(['docker-compose', 'up', '-d'])
+    subprocess.check_call(['docker-compose', 'up', '-d'])
+    subprocess.check_call(['terraform', '-chdir=terraform', 'init'])
+    subprocess.check_call(['terraform', '-chdir=terraform', 'apply', '-auto-approve'])
+
+if __name__ == "__main__":
+    deploy_lambda_function()

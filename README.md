@@ -5,7 +5,7 @@
 
 ## Setup
 ```bash
-chmod +x ./deploy.sh && ./deploy.sh
+python deploy.py
 ```
 
 Setup-scriptet kommer returnera api-url efter att LocalStack och Terraform har gjort sitt.
@@ -19,3 +19,8 @@ curl -X POST http://localhost:4566/_aws/execute-api/<API_ID>/dev/uppercase \
 
 ## Overview
 Om du har ett konto på LocalStack så kan du se alla tjänster och logs som körs på din [Dashboard](https://app.localstack.cloud)
+
+## Remove container
+```bash
+docker-compose down -v
+```
