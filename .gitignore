@@ -1,0 +1,7 @@
+*.zip
+venv/
+volume/
+*.hcl
+.terraform/
+*.tfstate
+*.tfstate.backup
