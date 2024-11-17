@@ -2,6 +2,7 @@
 - AWS CLI
 - Docker
 - Python >= 3.9
+- Terraform
 
 ## Setup
 ```bash
